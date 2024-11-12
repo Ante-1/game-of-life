@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game of Life</title>
+</head>
+<style>
+    #game-board {
+        display: grid;
+        width: fit-content;
+    }
+    .cell {
+        border: 1px solid black;
+        width: 20px;
+        height: 20px;
+        background-color: grey;
+    }
+    .populated {
+        background-color: chartreuse;
+    }
+</style>
+<script>
+    const width = 70;
+    const height = 35;
+
+    document.addEventListener("DOMContentLoaded", () => initBoard())
+
+    function initBoard() {
+        const gameBoard = document.getElementById("game-board");
+        gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
+        gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
+
+
+        for (let i = 0; i < width * height; i++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.addEventListener("click", onClickCell);
+            gameBoard.appendChild(cell);
+        }
+    }
+
+    function onClickCell(event) {
+        const cell = event.target;
+        cell.dataset.populated = "true";
+        cell.className += " populated";
+        console.log("cells", getBoardData());
+    }
+
+    function getBoardData() {
+        const gameBoard = document.getElementById("game-board");
+        const cellElements = gameBoard.children;
+        const cells = [];
+        for (let cell of cellElements) {
+            if (cell.dataset.populated === "true") {
+                cells.push(true);
+            } else {
+                cells.push(false);
+            }
+        }
+        return cells;
+    }
+
+    async function fetchNextGameStep(width, height, cells) {
+        const gameBoard = {
+            width,
+            height,
+            cells
+        };
+        const body = JSON.stringify(gameBoard);
+        const res = await fetch("/computeGameStep", { method: "POST", body });
+        return await res.json();
+    }
+
+    function renderBoard(cells) {
+        const gameBoard = document.getElementById("game-board");
+        const cellElements = gameBoard.children;
+        for (let i = 0; i < cellElements.length; i++) {
+            if(cells[i]) {
+                cellElements[i].dataset.populated = "true";
+                cellElements[i].className += " populated";
+            }
+        }
+    }
+
+    async function progress() {
+        const boardData = getBoardData();
+        const nextBoard = await fetchNextGameStep(boardData);
+        renderBoard(nextBoard.cells);
+    }
+</script>
+<body>
+<div id="game-board">
+
+</div>
+</body>
+</html>
