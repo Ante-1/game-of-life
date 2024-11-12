@@ -27,15 +27,45 @@ public class GameLogic {
 
 
     private static int[] neighbourIndexes(int cellIndex, GameBoard board) {
+        // edge case handling (cell on edge): continue on the opposite board side
+        int westOffset = -1;
+        if (cellIndex % board.width() == 0) { // cell is on the left col of the board
+            westOffset = board.width() - 1;
+        }
+
+        int eastOffset = 1;
+        if (cellIndex % board.width() == board.width() -1) { // cell is on the right col of the board
+            eastOffset = - board.width() + 1;
+        }
+
+        int lastRowFirstCell = (board.height() - 1) * board.height();
+
+        int north = cellIndex - board.width();
+        if (cellIndex < board.width()) { // cell is in first row
+            north = lastRowFirstCell + cellIndex;
+        }
+
+        int south = cellIndex + board.width();
+        if (cellIndex > lastRowFirstCell) { // cell is in last row
+            south = cellIndex - lastRowFirstCell;
+        }
+
+        int northWest = north + westOffset;
+        int northEast = north + eastOffset;
+        int west = cellIndex + westOffset;
+        int east = cellIndex + eastOffset;
+        int southWest = south + westOffset;
+        int southEast = south + eastOffset;
+
         return new int[]{
-                cellIndex - board.width() - 1,
-                cellIndex - board.width(),
-                cellIndex - board.width() + 1,
-                cellIndex - 1,
-                cellIndex + 1,
-                cellIndex + board.width() - 1,
-                cellIndex + board.width(),
-                cellIndex + board.width() + 1
+                northWest,
+                north,
+                northEast,
+                west,
+                east,
+                southWest,
+                south,
+                southEast
         };
     }
 
