@@ -9,27 +9,31 @@
         display: grid;
         width: fit-content;
     }
+
     .cell {
         border: 1px solid black;
         width: 20px;
         height: 20px;
         background-color: grey;
     }
+
     .populated {
         background-color: chartreuse;
     }
 </style>
 <script>
-    const width = 70;
-    const height = 35;
+    const width = 60;
+    const height = 30;
 
-    document.addEventListener("DOMContentLoaded", () => initBoard())
+    document.addEventListener("DOMContentLoaded", () => initBoard());
 
     function initBoard() {
         const gameBoard = document.getElementById("game-board");
+        const startStopButton = document.getElementById("start-stop");
         gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
         gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
 
+        startStopButton.addEventListener("click", onClickStartStopGame);
 
         for (let i = 0; i < width * height; i++) {
             const cell = document.createElement("div");
@@ -41,9 +45,13 @@
 
     function onClickCell(event) {
         const cell = event.target;
-        cell.dataset.populated = "true";
-        cell.className += " populated";
-        console.log("cells", getBoardData());
+        if (cell.dataset.populated === "1") {
+            cell.dataset.populated = "0";
+            cell.className = "cell";
+        } else {
+            cell.dataset.populated = "1";
+            cell.className = "cell populated";
+        }
     }
 
     function getBoardData() {
@@ -51,23 +59,29 @@
         const cellElements = gameBoard.children;
         const cells = [];
         for (let cell of cellElements) {
-            if (cell.dataset.populated === "true") {
-                cells.push(true);
+            if (cell.dataset.populated === "1") {
+                cells.push(1);
             } else {
-                cells.push(false);
+                cells.push(0);
             }
         }
         return cells;
     }
 
-    async function fetchNextGameStep(width, height, cells) {
+    async function fetchNextGameStep(cells) {
         const gameBoard = {
             width,
             height,
             cells
         };
         const body = JSON.stringify(gameBoard);
-        const res = await fetch("/computeGameStep", { method: "POST", body });
+        const res = await fetch("/computeGameStep", {
+            method: "POST",
+            body,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
         return await res.json();
     }
 
@@ -75,9 +89,12 @@
         const gameBoard = document.getElementById("game-board");
         const cellElements = gameBoard.children;
         for (let i = 0; i < cellElements.length; i++) {
-            if(cells[i]) {
-                cellElements[i].dataset.populated = "true";
-                cellElements[i].className += " populated";
+            if (cells[i] === 1) {
+                cellElements[i].dataset.populated = "1";
+                cellElements[i].className = "cell populated";
+            } else {
+                cellElements[i].dataset.populated = "0";
+                cellElements[i].className = "cell";
             }
         }
     }
@@ -87,10 +104,21 @@
         const nextBoard = await fetchNextGameStep(boardData);
         renderBoard(nextBoard.cells);
     }
+
+    function onClickStartStopGame() {
+        const gameBoard = document.getElementById("game-board");
+        if (gameBoard.dataset.running === "true") {
+            gameBoard.dataset.running = "false";
+            clearInterval(parseInt(gameBoard.dataset.intervalNum));
+        } else {
+            gameBoard.dataset.running = "true";
+            gameBoard.dataset.intervalNum = setInterval(progress, 1000).toString();
+        }
+    }
 </script>
 <body>
 <div id="game-board">
-
 </div>
+<button id="start-stop">Start / Stop</button>
 </body>
 </html>
