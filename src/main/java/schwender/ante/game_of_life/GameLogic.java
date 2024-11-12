@@ -38,7 +38,7 @@ public class GameLogic {
             eastOffset = - board.width() + 1;
         }
 
-        int lastRowFirstCell = (board.height() - 1) * board.height();
+        int lastRowFirstCell = (board.height() - 1) * board.width();
 
         int north = cellIndex - board.width();
         if (cellIndex < board.width()) { // cell is in first row
