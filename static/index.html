@@ -22,8 +22,9 @@
     }
 </style>
 <script>
-    const width = 60;
-    const height = 30;
+    const width = 80;
+    const height = 40;
+    const REFRESH_TIME_MS = 1000;
 
     document.addEventListener("DOMContentLoaded", () => initBoard());
 
@@ -112,7 +113,7 @@
             clearInterval(parseInt(gameBoard.dataset.intervalNum));
         } else {
             gameBoard.dataset.running = "true";
-            gameBoard.dataset.intervalNum = setInterval(progress, 1000).toString();
+            gameBoard.dataset.intervalNum = setInterval(progress, REFRESH_TIME_MS).toString();
         }
     }
 </script>
