@@ -22,9 +22,9 @@
     }
 </style>
 <script>
-    const width = 80;
-    const height = 40;
-    const REFRESH_TIME_MS = 1000;
+    const width = 85;
+    const height = 45;
+    const REFRESH_TIME_MS = 500;
 
     document.addEventListener("DOMContentLoaded", () => initBoard());
 
@@ -106,16 +106,27 @@
         renderBoard(nextBoard.cells);
     }
 
-    function onClickStartStopGame() {
+    async function onClickStartStopGame() {
         const gameBoard = document.getElementById("game-board");
+
         if (gameBoard.dataset.running === "true") {
             gameBoard.dataset.running = "false";
-            clearInterval(parseInt(gameBoard.dataset.intervalNum));
         } else {
             gameBoard.dataset.running = "true";
-            gameBoard.dataset.intervalNum = setInterval(progress, REFRESH_TIME_MS).toString();
+        }
+
+        while (gameBoard.dataset.running === "true") {
+            const start = Date.now();
+            await progress();
+            const end = Date.now();
+            const elapsedTime = end - start;
+            if (elapsedTime < REFRESH_TIME_MS) {
+                await wait(REFRESH_TIME_MS - elapsedTime);
+            }
         }
     }
+
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 </script>
 <body>
 <div id="game-board">

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 public record GameBoard(
         @NotNull @Max(2000) Integer width,
         @NotNull @Max(2000) Integer height,
-        int[] cells) {
+        @NotNull int[] cells) {
 
     public void printBoard() {
         for (int i = 0; i < height(); i++) {
