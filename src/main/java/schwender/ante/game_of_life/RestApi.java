@@ -32,6 +32,7 @@ public class RestApi {
     }
 
     public record SavedGameBoard(
+            Long id,
             @NotEmpty String name,
             @NotNull @Max(2000) Integer width,
             @NotNull @Max(2000) Integer height,
@@ -63,7 +64,7 @@ public class RestApi {
             for (int i = 0; i < length; i++) {
                 cells[i] = entity.getCells()[i];
             }
-            return new SavedGameBoard(entity.getName(), entity.getWidth(), entity.getHeight(), cells);
+            return new SavedGameBoard(entity.getId(), entity.getName(), entity.getWidth(), entity.getHeight(), cells);
         }).toList();
     }
 }

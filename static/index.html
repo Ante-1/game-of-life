@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Game of Life</title>
+    <link rel="stylesheet" href="css/pico.min.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 <style>
     #game-board {
@@ -20,17 +22,30 @@
     .populated {
         background-color: chartreuse;
     }
+
+    #start-stop {
+        margin-top: 1rem;
+        margin-inline: auto;
+        display: block;
+    }
+
+    .board-background {
+        width: fit-content;
+    }
 </style>
 <script>
-    const width = 85;
-    const height = 45;
+    const width = 60;
+    const height = 40;
     const REFRESH_TIME_MS = 500;
+    let savedBoards = null;
 
     document.addEventListener("DOMContentLoaded", () => initBoard());
 
-    function initBoard() {
+    async function initBoard() {
         const gameBoard = document.getElementById("game-board");
         const startStopButton = document.getElementById("start-stop");
+        const savedBoardsElement = document.getElementById("saved-boards");
+
         gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
         gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
 
@@ -42,6 +57,32 @@
             cell.addEventListener("click", onClickCell);
             gameBoard.appendChild(cell);
         }
+
+        const savedBoards = await fetchSavedGameBoards();
+        for (const savedBoard of savedBoards) {
+            const row = document.createElement("tr");
+            const name = document.createElement("td");
+            const size = document.createElement("td");
+            const loadButtonCell = document.createElement("td");
+            const loadButton = document.createElement("button");
+            loadButton.dataset.id = savedBoard.id;
+            loadButton.addEventListener("click", loadBoard);
+
+            name.innerHTML = savedBoard.name;
+            size.innerHTML = `${savedBoard.width} x ${savedBoard.height}`;
+            loadButton.innerHTML = "Load";
+            loadButton.className = "small-button";
+
+            savedBoardsElement.appendChild(row);
+            row.appendChild(name);
+            row.appendChild(size);
+            row.appendChild(loadButtonCell);
+            loadButtonCell.appendChild(loadButton);
+        }
+    }
+
+    function loadBoard() {
+        // todo
     }
 
     function onClickCell(event) {
@@ -126,11 +167,27 @@
         }
     }
 
+    async function fetchSavedGameBoards() {
+        const res = await fetch("/gameBoards");
+        return await res.json();
+    }
+
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 </script>
 <body>
-<div id="game-board">
-</div>
-<button id="start-stop">Start / Stop</button>
+<main class="container">
+    <section>
+        <h1>Game of Life</h1>
+        <article class="board-background">
+            <div id="game-board"></div>
+            <button id="start-stop">Start / Stop</button>
+        </article>
+    </section>
+    <section>
+        <h2>Saved Game Boards</h2>
+        <table id="saved-boards">
+        </table>
+    </section>
+</main>
 </body>
 </html>
