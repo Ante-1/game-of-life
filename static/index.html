@@ -29,14 +29,25 @@
             background-color: chartreuse;
         }
 
-        #start-stop {
+        .start-stop-group {
             margin-top: 1rem;
             margin-inline: auto;
-            display: block;
+            & > button {
+                width: 200px;
+            }
+        }
+
+        #start-stop {
+            justify-self: end;
         }
 
         .board-background {
             width: fit-content;
+        }
+
+        .align-right {
+            display: flex;
+            justify-content: flex-end;
         }
     </style>
     <script>
@@ -71,10 +82,16 @@
         async function initBoard() {
             const startStopButton = document.getElementById("start-stop");
             const savedBoardsElement = document.getElementById("saved-boards");
+            const saveBoardForm = document.getElementById("save-board-form");
+            const resetButton = document.getElementById("reset-board-button");
+
             startStopButton.addEventListener("click", onClickStartStopGame);
+            resetButton.addEventListener("click", renderBoard);
+            saveBoardForm.addEventListener("submit", saveBoard);
 
             renderBoard();
 
+            // render savedBoardsTable
             const savedBoards = await fetchSavedGameBoards();
             savedGameBoards = savedBoards;
             for (const savedBoard of savedBoards) {
@@ -89,7 +106,7 @@
                 name.textContent = savedBoard.name;
                 size.textContent = `${savedBoard.width} x ${savedBoard.height}`;
                 loadButton.textContent = "Load";
-                loadButton.className = "small-button";
+                loadButtonCell.className = "align-right";
 
                 savedBoardsElement.appendChild(row);
                 row.appendChild(name);
@@ -100,6 +117,7 @@
         }
 
         function renderBoard() {
+            gameIsRunning = false;
             const gameBoard = document.getElementById("game-board");
             gameBoard.textContent = "";
             gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
@@ -117,7 +135,6 @@
          * @param {MouseEvent} event
          */
         function loadBoard(event) {
-            gameIsRunning = false;
             const id = event.target.dataset.id;
             /** @type {SavedGameBoard | null}*/
             const savedBoard = savedGameBoards?.find(board => board.id === parseInt(id));
@@ -226,6 +243,45 @@
         }
 
         /**
+         * @param {FormDataEvent} event
+         * @returns {Promise<void>}
+         */
+        async function saveBoard(event) {
+            event.preventDefault();
+            console.log("event", event);
+
+            const formData = new FormData(event.target);
+            const formObject = Object.fromEntries(formData.entries());
+            const jsonPayload = JSON.stringify(
+                {
+                    name: formObject.name,
+                    width,
+                    height,
+                    cells: getBoardData()
+                }
+            );
+
+            console.log("jsonPayload", jsonPayload);
+
+            try {
+                // Send the JSON payload to the server
+                const response = await fetch("/saveGameBoard", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: jsonPayload
+                });
+
+                if (!response.ok) {
+                    console.error('Error submitting form:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        /**
          * @param {number} ms time to wait in milliseconds
          * @returns {Promise<void>}
          */
@@ -238,13 +294,36 @@
         <h1>Game of Life</h1>
         <article class="board-background">
             <div id="game-board"></div>
-            <button id="start-stop">Start / Stop</button>
+            <div class="start-stop-group grid">
+                <button id="start-stop">Start / Stop</button>
+                <button id="reset-board-button" class="secondary">Reset board</button>
+            </div>
         </article>
     </section>
     <section>
-        <h2>Saved Game Boards</h2>
-        <table id="saved-boards">
-        </table>
+        <article>
+            <h2>Save current board</h2>
+            <form id="save-board-form">
+                <fieldset role="group">
+                    <input
+                            placeholder="Name"
+                            name="name"
+                            autocomplete="off"
+                    />
+                    <input
+                            type="submit"
+                            value="Save"
+                    />
+                </fieldset>
+            </form>
+        </article>
+    </section>
+    <section>
+        <article>
+            <h2>Saved Game Boards</h2>
+            <table id="saved-boards">
+            </table>
+        </article>
     </section>
 </main>
 </body>
