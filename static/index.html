@@ -59,29 +59,21 @@
          * @property {number[]} cells
          */
 
-        const width = 60;
-        const height = 40;
+        let width = 60;
+        let height = 40;
         const REFRESH_TIME_MS = 500;
+        /** @type {SavedGameBoard[] | null}*/
         let savedGameBoards = null;
+        let gameIsRunning = false;
 
         document.addEventListener("DOMContentLoaded", () => initBoard());
 
         async function initBoard() {
-            const gameBoard = document.getElementById("game-board");
             const startStopButton = document.getElementById("start-stop");
             const savedBoardsElement = document.getElementById("saved-boards");
-
-            gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
-            gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
-
             startStopButton.addEventListener("click", onClickStartStopGame);
 
-            for (let i = 0; i < width * height; i++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.addEventListener("click", onClickCell);
-                gameBoard.appendChild(cell);
-            }
+            renderBoard();
 
             const savedBoards = await fetchSavedGameBoards();
             savedGameBoards = savedBoards;
@@ -94,9 +86,9 @@
                 loadButton.dataset.id = savedBoard.id.toString();
                 loadButton.addEventListener("click", loadBoard);
 
-                name.innerHTML = savedBoard.name;
-                size.innerHTML = `${savedBoard.width} x ${savedBoard.height}`;
-                loadButton.innerHTML = "Load";
+                name.textContent = savedBoard.name;
+                size.textContent = `${savedBoard.width} x ${savedBoard.height}`;
+                loadButton.textContent = "Load";
                 loadButton.className = "small-button";
 
                 savedBoardsElement.appendChild(row);
@@ -107,11 +99,33 @@
             }
         }
 
+        function renderBoard() {
+            const gameBoard = document.getElementById("game-board");
+            gameBoard.textContent = "";
+            gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
+            gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
+
+            for (let i = 0; i < width * height; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.addEventListener("click", onClickCell);
+                gameBoard.appendChild(cell);
+            }
+        }
+
         /**
          * @param {MouseEvent} event
          */
         function loadBoard(event) {
-            // todo
+            gameIsRunning = false;
+            const id = event.target.dataset.id;
+            /** @type {SavedGameBoard | null}*/
+            const savedBoard = savedGameBoards?.find(board => board.id === parseInt(id));
+            width = savedBoard.width;
+            height = savedBoard.height;
+
+            renderBoard();
+            savedBoard && renderPopulatedCells(savedBoard.cells);
         }
 
         /**
@@ -169,7 +183,7 @@
         /**
          * @param {number[]} cells
          */
-        function renderBoard(cells) {
+        function renderPopulatedCells(cells) {
             const gameBoard = document.getElementById("game-board");
             const cellElements = gameBoard.children;
             for (let i = 0; i < cellElements.length; i++) {
@@ -186,19 +200,13 @@
         async function progress() {
             const boardData = getBoardData();
             const nextBoard = await fetchNextGameStep(boardData);
-            renderBoard(nextBoard.cells);
+            renderPopulatedCells(nextBoard.cells);
         }
 
         async function onClickStartStopGame() {
-            const gameBoard = document.getElementById("game-board");
+            gameIsRunning = !gameIsRunning;
 
-            if (gameBoard.dataset.running === "true") {
-                gameBoard.dataset.running = "false";
-            } else {
-                gameBoard.dataset.running = "true";
-            }
-
-            while (gameBoard.dataset.running === "true") {
+            while (gameIsRunning) {
                 const start = Date.now();
                 await progress();
                 const end = Date.now();
