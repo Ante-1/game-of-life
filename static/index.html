@@ -48,8 +48,11 @@
         }
 
         .align-right {
-            display: flex;
-            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .inline {
+            display: inline-block;
         }
 
         .center-board {
@@ -102,23 +105,34 @@
             savedGameBoards = savedBoards;
             for (const savedBoard of savedBoards) {
                 const row = document.createElement("tr");
+                savedBoardsElement.appendChild(row);
+
                 const name = document.createElement("td");
+                row.appendChild(name);
+                name.textContent = savedBoard.name;
+
                 const size = document.createElement("td");
-                const loadButtonCell = document.createElement("td");
+                row.appendChild(size);
+                size.textContent = `${savedBoard.width} x ${savedBoard.height}`;
+
+                const buttonsCell = document.createElement("td");
+                buttonsCell.className = "align-right";
+                row.appendChild(buttonsCell);
+
                 const loadButton = document.createElement("button");
                 loadButton.dataset.id = savedBoard.id.toString();
                 loadButton.addEventListener("click", loadBoard);
-
-                name.textContent = savedBoard.name;
-                size.textContent = `${savedBoard.width} x ${savedBoard.height}`;
                 loadButton.textContent = "Load";
-                loadButtonCell.className = "align-right";
+                loadButton.className = "inline";
+                buttonsCell.appendChild(loadButton);
 
-                savedBoardsElement.appendChild(row);
-                row.appendChild(name);
-                row.appendChild(size);
-                row.appendChild(loadButtonCell);
-                loadButtonCell.appendChild(loadButton);
+                const deleteButton = document.createElement("button");
+                deleteButton.dataset.id = savedBoard.id.toString();
+                deleteButton.addEventListener("click", deleteBoard);
+                deleteButton.textContent = "Delete";
+                deleteButton.className = "inline";
+                deleteButton.style.marginLeft = "1rem";
+                buttonsCell.appendChild(deleteButton);
             }
         }
 
@@ -244,7 +258,7 @@
          * @returns {Promise<SavedGameBoard[]>}
          */
         async function fetchSavedGameBoards() {
-            const res = await fetch("/gameBoards");
+            const res = await fetch("/game-boards");
             return await res.json();
         }
 
@@ -254,7 +268,6 @@
          */
         async function saveBoard(event) {
             event.preventDefault();
-            console.log("event", event);
 
             const formData = new FormData(event.target);
             const formObject = Object.fromEntries(formData.entries());
@@ -267,11 +280,9 @@
                 }
             );
 
-            console.log("jsonPayload", jsonPayload);
-
             try {
                 // Send the JSON payload to the server
-                const response = await fetch("/saveGameBoard", {
+                const response = await fetch("/game-boards", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -281,6 +292,23 @@
 
                 if (!response.ok) {
                     console.error('Error submitting form:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        async function deleteBoard(event) {
+            event.preventDefault();
+            const id = event.target.dataset.id;
+
+            try {
+                const response = await fetch("/game-boards/" + id, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    console.error('Error deleting board:', response.statusText);
                 }
             } catch (error) {
                 console.error('Network error:', error);

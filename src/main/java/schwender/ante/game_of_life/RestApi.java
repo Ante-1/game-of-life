@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import schwender.ante.game_of_life.persistance.GameBoardEntity;
 import schwender.ante.game_of_life.persistance.GameBoardRepository;
 
@@ -38,7 +35,7 @@ public class RestApi {
             @NotNull @Max(2000) Integer height,
             @NotNull int[] cells) {}
 
-    @PostMapping("/saveGameBoard")
+    @PostMapping("/game-boards")
     public void saveGameBoard(@Valid @RequestBody RestApi.SavedGameBoard board) {
         if (board.cells().length != board.height() * board.width()) {
             throw new RuntimeException("Error: number of cells does not equal height * width");
@@ -53,7 +50,7 @@ public class RestApi {
         repository.save(toSave);
     }
 
-    @GetMapping("/gameBoards")
+    @GetMapping("/game-boards")
     public List<SavedGameBoard> getGameBoards() {
         var gameBoards = repository.findAll();
 
@@ -66,5 +63,10 @@ public class RestApi {
             }
             return new SavedGameBoard(entity.getId(), entity.getName(), entity.getWidth(), entity.getHeight(), cells);
         }).toList();
+    }
+
+    @DeleteMapping("/game-boards/{id}")
+    public void deleteGameBoard(@Valid @PathVariable Long id) {
+        repository.deleteById(id);
     }
 }
