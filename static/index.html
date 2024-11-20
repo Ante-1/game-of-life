@@ -58,6 +58,10 @@
         .center-board {
             width: fit-content;
         }
+
+        #saved-boards {
+            table-layout: fixed;
+        }
     </style>
     <script>
         // @ts-check
@@ -90,7 +94,6 @@
 
         async function initBoard() {
             const startStopButton = document.getElementById("start-stop");
-            const savedBoardsElement = document.getElementById("saved-boards");
             const saveBoardForm = document.getElementById("save-board-form");
             const resetButton = document.getElementById("reset-board-button");
 
@@ -101,6 +104,28 @@
             renderBoard();
 
             // render savedBoardsTable
+            await renderSavedBoardsTable();
+        }
+
+        function renderBoard() {
+            gameIsRunning = false;
+            const gameBoard = document.getElementById("game-board");
+            gameBoard.textContent = "";
+            gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
+            gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
+
+            for (let i = 0; i < width * height; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cell";
+                cell.addEventListener("click", onClickCell);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        async function renderSavedBoardsTable() {
+            const savedBoardsElement = document.getElementById("saved-boards");
+            savedBoardsElement.textContent = "";
+
             const savedBoards = await fetchSavedGameBoards();
             savedGameBoards = savedBoards;
             for (const savedBoard of savedBoards) {
@@ -133,21 +158,6 @@
                 deleteButton.className = "inline";
                 deleteButton.style.marginLeft = "1rem";
                 buttonsCell.appendChild(deleteButton);
-            }
-        }
-
-        function renderBoard() {
-            gameIsRunning = false;
-            const gameBoard = document.getElementById("game-board");
-            gameBoard.textContent = "";
-            gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
-            gameBoard.style.gridTemplateRows = "repeat(" + height + ", 1fr)";
-
-            for (let i = 0; i < width * height; i++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.addEventListener("click", onClickCell);
-                gameBoard.appendChild(cell);
             }
         }
 
@@ -296,6 +306,7 @@
             } catch (error) {
                 console.error('Network error:', error);
             }
+            await renderSavedBoardsTable();
         }
 
         async function deleteBoard(event) {
@@ -313,6 +324,7 @@
             } catch (error) {
                 console.error('Network error:', error);
             }
+            await renderSavedBoardsTable();
         }
 
         /**
