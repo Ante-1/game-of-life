@@ -30,16 +30,19 @@
         }
 
         .start-stop-group {
+            display:flex;
+            gap: 1rem;
             margin-top: 1rem;
             margin-inline: auto;
 
-            & > button {
+            & > * {
                 width: 200px;
             }
         }
 
-        #start-stop {
-            justify-self: end;
+        .start-stop-group-wrapper {
+            display: grid;
+            place-content: center;
         }
 
         .board-background {
@@ -61,6 +64,15 @@
 
         #saved-boards {
             table-layout: fixed;
+        }
+
+        #refresh-interval {
+            margin: 0;
+            height: auto;
+        }
+
+        #refresh-interval-label {
+            font-size: 0.8rem;
         }
     </style>
     <script>
@@ -96,10 +108,12 @@
             const startStopButton = document.getElementById("start-stop");
             const saveBoardForm = document.getElementById("save-board-form");
             const resetButton = document.getElementById("reset-board-button");
+            const refreshInterval = document.getElementById("refresh-interval");
 
             startStopButton.addEventListener("click", onClickStartStopGame);
             resetButton.addEventListener("click", renderBoard);
             saveBoardForm.addEventListener("submit", saveBoard);
+            refreshInterval.addEventListener("change", logInterval);
 
             renderBoard();
 
@@ -107,8 +121,14 @@
             await renderSavedBoardsTable();
         }
 
+        function logInterval(event) {
+            console.log(event.target.value);
+        }
+
         function renderBoard() {
             gameIsRunning = false;
+            const startStopButton = document.getElementById("start-stop");
+            startStopButton.textContent = "Start";
             const gameBoard = document.getElementById("game-board");
             gameBoard.textContent = "";
             gameBoard.style.gridTemplateColumns = "repeat(" + width + ", 1fr)";
@@ -251,7 +271,10 @@
         }
 
         async function onClickStartStopGame() {
+            const startStopButton = document.getElementById("start-stop");
+
             gameIsRunning = !gameIsRunning;
+            startStopButton.textContent = gameIsRunning ? "Stop" : "Start";
 
             while (gameIsRunning) {
                 const start = Date.now();
@@ -341,9 +364,17 @@
         <article class="board-background">
             <div class="center-board">
                 <div id="game-board"></div>
-                <div class="start-stop-group grid">
-                    <button id="start-stop">Start / Stop</button>
+                <div class="start-stop-group-wrapper">
+                <div class="start-stop-group">
+                    <div>
+                        <label for="refresh-interval" id="refresh-interval-label">
+                            Refresh interval
+                        </label>
+                        <input type="range" min="10" max="1000" step="1" value="500" id="refresh-interval"/>
+                    </div>
+                    <button id="start-stop">Start</button>
                     <button id="reset-board-button" class="secondary">Reset board</button>
+                </div>
                 </div>
             </div>
         </article>
