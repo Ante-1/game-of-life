@@ -97,7 +97,7 @@
 
         let width = 60;
         let height = 40;
-        const REFRESH_TIME_MS = 500;
+        let refreshTimeMs = 500;
         /** @type {SavedGameBoard[] | null}*/
         let savedGameBoards = null;
         let gameIsRunning = false;
@@ -108,7 +108,7 @@
             const startStopButton = document.getElementById("start-stop");
             const saveBoardForm = document.getElementById("save-board-form");
             const resetButton = document.getElementById("reset-board-button");
-            const refreshInterval = document.getElementById("refresh-interval");
+            const refreshInterval = document.getElementById("refresh-speed");
 
             startStopButton.addEventListener("click", onClickStartStopGame);
             resetButton.addEventListener("click", renderBoard);
@@ -116,13 +116,12 @@
             refreshInterval.addEventListener("change", logInterval);
 
             renderBoard();
-
-            // render savedBoardsTable
             await renderSavedBoardsTable();
         }
 
         function logInterval(event) {
-            console.log(event.target.value);
+            const speed = event.target.value;
+            refreshTimeMs = 1000 - parseInt(speed);
         }
 
         function renderBoard() {
@@ -281,8 +280,8 @@
                 await progress();
                 const end = Date.now();
                 const elapsedTime = end - start;
-                if (elapsedTime < REFRESH_TIME_MS) {
-                    await wait(REFRESH_TIME_MS - elapsedTime);
+                if (elapsedTime < refreshTimeMs) {
+                    await wait(refreshTimeMs - elapsedTime);
                 }
             }
         }
@@ -367,10 +366,10 @@
                 <div class="start-stop-group-wrapper">
                 <div class="start-stop-group">
                     <div>
-                        <label for="refresh-interval" id="refresh-interval-label">
-                            Refresh interval
+                        <label for="refresh-speed" id="refresh-speed-label">
+                            Speed
                         </label>
-                        <input type="range" min="10" max="1000" step="1" value="500" id="refresh-interval"/>
+                        <input type="range" min="0" max="990" step="1" value="480" id="refresh-speed" />
                     </div>
                     <button id="start-stop">Start</button>
                     <button id="reset-board-button" class="secondary">Reset board</button>
