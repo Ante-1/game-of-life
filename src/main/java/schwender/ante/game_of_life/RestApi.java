@@ -2,6 +2,7 @@ package schwender.ante.game_of_life;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
@@ -28,15 +29,21 @@ public class RestApi {
         return GameLogic.computeGameStep(board);
     }
 
-    public record SavedGameBoard(
+    public record SavedGameBoardResponse(
             Long id,
             @NotEmpty String name,
-            @NotNull @Max(2000) Integer width,
-            @NotNull @Max(2000) Integer height,
+            @NotNull @Min(0) @Max(2000) Integer width,
+            @NotNull @Min(0) @Max(2000) Integer height,
+            @NotNull int[] cells) {}
+    
+    public record SaveGameBoardRequest(
+            @NotEmpty String name,
+            @NotNull @Min(0) @Max(2000) Integer width,
+            @NotNull @Min(0) @Max(2000) Integer height,
             @NotNull int[] cells) {}
 
     @PostMapping("/game-boards")
-    public void saveGameBoard(@Valid @RequestBody RestApi.SavedGameBoard board) {
+    public void saveGameBoard(@Valid @RequestBody RestApi.SaveGameBoardRequest board) {
         if (board.cells().length != board.height() * board.width()) {
             throw new RuntimeException("Error: number of cells does not equal height * width");
         }
@@ -51,7 +58,7 @@ public class RestApi {
     }
 
     @GetMapping("/game-boards")
-    public List<SavedGameBoard> getGameBoards() {
+    public List<SavedGameBoardResponse> getGameBoards() {
         var gameBoards = repository.findAll();
 
         var res = StreamSupport.stream(gameBoards.spliterator(), true);
@@ -61,7 +68,7 @@ public class RestApi {
             for (int i = 0; i < length; i++) {
                 cells[i] = entity.getCells()[i];
             }
-            return new SavedGameBoard(entity.getId(), entity.getName(), entity.getWidth(), entity.getHeight(), cells);
+            return new SavedGameBoardResponse(entity.getId(), entity.getName(), entity.getWidth(), entity.getHeight(), cells);
         }).toList();
     }
 

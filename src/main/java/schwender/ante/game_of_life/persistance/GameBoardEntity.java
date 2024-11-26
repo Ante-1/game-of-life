@@ -2,6 +2,7 @@ package schwender.ante.game_of_life.persistance;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -16,8 +17,8 @@ public class GameBoardEntity {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Long id;
     @NotEmpty String name;
-    private @NotNull @Max(2000) Integer width;
-    @NotNull @Max(2000) Integer height;
+    private @NotNull @Min(0) @Max(2000) Integer width;
+    @NotNull @Min(0) @Max(2000) Integer height;
     @NotNull @Column(length=2000*2000) private byte[] cells;
 
     protected GameBoardEntity() {}

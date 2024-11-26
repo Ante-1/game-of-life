@@ -1,11 +1,12 @@
 package schwender.ante.game_of_life;
 
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record GameBoard(
-        @NotNull @Max(2000) Integer width,
-        @NotNull @Max(2000) Integer height,
+        @NotNull @Min(0) @Max(2000) Integer width,
+        @NotNull @Min(0) @Max(2000) Integer height,
         @NotNull int[] cells) {
 
     public void printBoard() {
