@@ -8,6 +8,9 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 
 @Entity
+// @Table(name = "...") specify the name of the table that corresponds to the entity
+// I don't use it here because I let hibernate generate the database
+// (see spring.jpa.hibernate.ddl-auto in application.properties)
 public class GameBoardEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
