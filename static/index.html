@@ -94,7 +94,6 @@
          * @property {number} height
          * @property {number[]} cells
          */
-
         let width = 60;
         let height = 40;
         let refreshTimeMs = 500;
@@ -105,6 +104,9 @@
         document.addEventListener("DOMContentLoaded", () => initBoard());
 
         async function initBoard() {
+            const boardDimensions = calculateBoardSize();
+            width = boardDimensions.width;
+            height = boardDimensions.height;
             const startStopButton = document.getElementById("start-stop");
             const saveBoardForm = document.getElementById("save-board-form");
             const resetButton = document.getElementById("reset-board-button");
@@ -347,6 +349,22 @@
                 console.error('Network error:', error);
             }
             await renderSavedBoardsTable();
+        }
+
+        /**
+         * @returns {{width: number, height: number}}
+         */
+        function calculateBoardSize() {
+            const bodyWidth = window.innerWidth;
+            const bodyHeight = window.innerHeight;
+
+            const cellWidth = bodyWidth / 20;
+            const cellHeight = bodyHeight / 20;
+
+            const containerCellWidth = Math.floor(cellWidth * 0.8);
+            const containerCellHeight = Math.floor(cellHeight * 0.8);
+
+            return {width: containerCellWidth, height: containerCellHeight}
         }
 
         /**
